@@ -11,6 +11,7 @@ import {uint512} from "./utils/512Math.sol";
 import {DEPLOYER} from "./deployer/DeployerAddress.sol";
 
 import {Basic} from "./core/Basic.sol";
+import {Deepstate} from "./core/Deepstate.sol";
 import {RfqOrderSettlement} from "./core/RfqOrderSettlement.sol";
 import {UniswapV3Fork} from "./core/UniswapV3Fork.sol";
 import {UniswapV2} from "./core/UniswapV2.sol";
@@ -21,6 +22,7 @@ import {FastLogic} from "./utils/FastLogic.sol";
 import {Ternary} from "./utils/Ternary.sol";
 
 import {ISettlerActions} from "./ISettlerActions.sol";
+import {IDeepstateV1} from "./interfaces/IDeepstateV1.sol";
 import {revertTooMuchSlippage} from "./core/SettlerErrors.sol";
 
 /// @dev This library's ABIDecoding is more lax than the Solidity ABIDecoder. This library omits index bounds/overflow
@@ -53,7 +55,15 @@ library CalldataDecoder {
     }
 }
 
-abstract contract SettlerBase is ISettlerBase, Basic, RfqOrderSettlement, UniswapV3Fork, UniswapV2, Velodrome {
+abstract contract SettlerBase is
+    ISettlerBase,
+    Basic,
+    Deepstate,
+    RfqOrderSettlement,
+    UniswapV3Fork,
+    UniswapV2,
+    Velodrome
+{
     using SafeTransferLib for IERC20;
     using SafeTransferLib for address payable;
     using FastLogic for bool;
@@ -150,6 +160,11 @@ abstract contract SettlerBase is ISettlerBase, Basic, RfqOrderSettlement, Uniswa
                 abi.decode(data, (IERC20, uint256, address, uint256, bytes));
 
             basicSellToPool(sellToken, bps, pool, offset, _data);
+        } else if (action == uint32(ISettlerActions.DEEPSTATE.selector)) {
+            (IDeepstateV1 deepstate, IDeepstateV1.FillParams[] memory fills) =
+                abi.decode(data, (IDeepstateV1, IDeepstateV1.FillParams[]));
+
+            sellToDeepstate(deepstate, fills);
         } else if (action == uint32(ISettlerActions.VELODROME.selector)) {
             (address recipient, uint256 bps, IVelodromePair pool, uint24 swapInfo, uint256 minAmountOut) =
                 abi.decode(data, (address, uint256, IVelodromePair, uint24, uint256));

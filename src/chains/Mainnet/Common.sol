@@ -24,6 +24,7 @@ import {FastLogic} from "../../utils/FastLogic.sol";
 import {Ternary} from "../../utils/Ternary.sol";
 
 import {ISettlerActions} from "../../ISettlerActions.sol";
+import {IDeepstateV1} from "../../interfaces/IDeepstateV1.sol";
 import {ISignatureTransfer} from "@permit2/interfaces/ISignatureTransfer.sol";
 import {revertUnknownForkId} from "../../core/SettlerErrors.sol";
 
@@ -107,6 +108,11 @@ abstract contract MainnetMixin is
                 abi.decode(data, (IERC20, uint256, address, uint256, bytes));
 
             basicSellToPool(sellToken, bps, pool, offset, _data);
+        } else if (action == uint32(ISettlerActions.DEEPSTATE.selector)) {
+            (IDeepstateV1 deepstate, IDeepstateV1.FillParams[] memory fills) =
+                abi.decode(data, (IDeepstateV1, IDeepstateV1.FillParams[]));
+
+            sellToDeepstate(deepstate, fills);
         } /* `VELODROME` is removed */
         else if (action == uint32(ISettlerActions.POSITIVE_SLIPPAGE.selector)) {
             (address payable recipient, IERC20 token, uint256 expectedAmount, uint256 maxBps) =
@@ -147,7 +153,8 @@ abstract contract MainnetMixin is
                 sellToBalancerV3(recipient, sellToken, bps, feeOnTransfer, hashMul, hashMod, fills, amountOutMin);
             } else if (action == uint32(ISettlerActions.EKUBO.selector)) {
                 sellToEkuboV2(recipient, sellToken, bps, feeOnTransfer, hashMul, hashMod, fills, amountOutMin);
-            } else { // if (action == uint32(ISettlerActions.EKUBOV3.selector))
+            } else {
+                // if (action == uint32(ISettlerActions.EKUBOV3.selector))
                 sellToEkuboV3(recipient, sellToken, bps, feeOnTransfer, hashMul, hashMod, fills, amountOutMin);
             }
         } else if (action == uint32(ISettlerActions.MAKERPSM.selector)) {

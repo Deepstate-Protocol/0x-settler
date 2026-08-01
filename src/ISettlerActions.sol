@@ -2,12 +2,12 @@
 pragma solidity ^0.8.25;
 
 import {ISignatureTransfer} from "@permit2/interfaces/ISignatureTransfer.sol";
+import {IDeepstateV1} from "./interfaces/IDeepstateV1.sol";
 
 interface ISettlerActions {
     /// VIP actions should always start with `recipient` address and the `permit` from the taker
     /// followed by all the other parameters to ensure compatibility with `executeWithPermit` entrypoint.
     /// `minBuyAmount`/`amountOutMin` should always be the last parameter.
-
     /// @dev Transfer funds from msg.sender Permit2.
     function TRANSFER_FROM(address recipient, ISignatureTransfer.PermitTransferFrom memory permit, bytes memory sig)
         external;
@@ -223,6 +223,9 @@ interface ISettlerActions {
     // Pre-req: Funded
     // Post-req: Payout
     function BASIC(address sellToken, uint256 bps, address pool, uint256 offset, bytes calldata data) external;
+
+    /// @dev Executes a self-funded Deepstate route. Every leg is forced to no-rest.
+    function DEEPSTATE(IDeepstateV1 deepstate, IDeepstateV1.FillParams[] calldata fills) external;
 
     function EKUBO(
         address recipient,
