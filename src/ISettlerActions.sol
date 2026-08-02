@@ -225,7 +225,10 @@ interface ISettlerActions {
     function BASIC(address sellToken, uint256 bps, address pool, uint256 offset, bytes calldata data) external;
 
     /// @dev Executes a self-funded Deepstate route. Every leg is forced to no-rest.
-    function DEEPSTATE(IDeepstateV1 deepstate, IDeepstateV1.FillParams[] calldata fills) external;
+    /// @param sellToken Token whose current Settler balance funds the route. Use the Settler ETH sentinel for native.
+    /// @param bps Proportion of the current `sellToken` balance made available to the engine.
+    function DEEPSTATE(address sellToken, uint256 bps, IDeepstateV1 deepstate, IDeepstateV1.FillParams[] calldata fills)
+        external;
 
     function EKUBO(
         address recipient,

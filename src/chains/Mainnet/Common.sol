@@ -109,10 +109,10 @@ abstract contract MainnetMixin is
 
             basicSellToPool(sellToken, bps, pool, offset, _data);
         } else if (action == uint32(ISettlerActions.DEEPSTATE.selector)) {
-            (IDeepstateV1 deepstate, IDeepstateV1.FillParams[] memory fills) =
-                abi.decode(data, (IDeepstateV1, IDeepstateV1.FillParams[]));
+            (IERC20 sellToken, uint256 bps, IDeepstateV1 deepstate, IDeepstateV1.FillParams[] memory fills) =
+                abi.decode(data, (IERC20, uint256, IDeepstateV1, IDeepstateV1.FillParams[]));
 
-            sellToDeepstate(deepstate, fills);
+            sellToDeepstate(sellToken, bps, deepstate, fills);
         } /* `VELODROME` is removed */
         else if (action == uint32(ISettlerActions.POSITIVE_SLIPPAGE.selector)) {
             (address payable recipient, IERC20 token, uint256 expectedAmount, uint256 maxBps) =
