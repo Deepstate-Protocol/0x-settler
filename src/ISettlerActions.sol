@@ -224,11 +224,11 @@ interface ISettlerActions {
     // Post-req: Payout
     function BASIC(address sellToken, uint256 ppm, address pool, uint256 offset, bytes calldata data) external;
 
-    /// @dev Executes a self-funded Deepstate route. Every leg is forced to no-rest.
+    /// @dev Executes a self-funded route against the canonical Robinhood Chain Deepstate engine.
+    /// Every leg must directly exchange `sellToken` for the transaction's declared buy token and is forced to no-rest.
     /// @param sellToken Token whose current Settler balance funds the route. Use the Settler ETH sentinel for native.
-    /// @param bps Proportion of the current `sellToken` balance made available to the engine.
-    function DEEPSTATE(address sellToken, uint256 bps, IDeepstateV1 deepstate, IDeepstateV1.FillParams[] calldata fills)
-        external;
+    /// @param ppm Proportion of the current `sellToken` balance made available to the engine.
+    function DEEPSTATE(address sellToken, uint256 ppm, IDeepstateV1.FillParams[] calldata fills) external;
 
     function EKUBO(
         address recipient,
